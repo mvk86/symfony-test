@@ -8,6 +8,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ProductRepository")
  * @UniqueEntity("strProductCode")
+ * @ORM\HasLifecycleCallbacks
  */
 class Product
 {
@@ -121,6 +122,17 @@ class Product
         $this->decProductCost = $decProductCost;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function updateTimestamps(): void
+    {
+        $dateTimeNow = new \DateTime('now');
+
+        $this->setDtmAdded($dateTimeNow);
+        $this->setStmTimestamp($dateTimeNow);
     }
 
     public function getDtmAdded(): ?\DateTimeInterface

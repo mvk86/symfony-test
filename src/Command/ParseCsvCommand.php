@@ -48,15 +48,35 @@ class ParseCsvCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $csvFolder = $this->params->get('kernel.project_dir') . DIRECTORY_SEPARATOR . $this->params->get('app.csv_dir');
+        $fInfo = finfo_open(FILEINFO_MIME_TYPE);
+
+        $allowedTypes = [
+            'text/comma-separated-values',
+            'text/csv',
+            'text/plain',
+            'application/csv',
+            'application/excel',
+            'application/vnd.ms-excel',
+            'application/vnd.msexcel',
+            'text/anytext'
+        ];
 
         // Looking for csv files in a folder
         $directoryData = array_diff(scandir($csvFolder), ['..', '.']);
         $this->filesToParse = [];
         foreach ($directoryData as $key => $value) {
-            if (!is_dir($csvFolder . DIRECTORY_SEPARATOR . $value)) {
-                $spl = new \SplFileInfo($csvFolder . DIRECTORY_SEPARATOR . $value);
-                if ($spl->getExtension() == 'csv') {
-                    $this->filesToParse[] = $csvFolder . DIRECTORY_SEPARATOR . $value;
+            $file = $csvFolder . DIRECTORY_SEPARATOR . $value;
+            if (!is_dir($file)) {
+                $mimeType = finfo_file($fInfo, $file);
+                $spl = new \SplFileInfo($file);
+
+                if ($spl->getExtension() == 'csv' && in_array($mimeType, $allowedTypes)) {
+                    $this->filesToParse[] = $file;
+
+                    // Fix line endings
+                    $string = @file_get_contents($file);
+                    $string = preg_replace('~\r\n?~', "\n", $string);
+                    file_put_contents($file, $string);
                 }
             }
         }

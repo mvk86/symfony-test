@@ -153,6 +153,7 @@ class ParseCsvCommand extends Command
                 foreach ($rowsData as $i => $item) {
                     $product = new Product();
 
+                    // set entity data
                     foreach ($item as $field => $value) {
                         //Preprocessing fields values
                         switch ($field) {
@@ -182,33 +183,39 @@ class ParseCsvCommand extends Command
             }
 
             // Output process report
-            $tableResult = new Table($output);
-            $tableResult->setHeaderTitle('Successfully imported lines');
-            $tableResult
-                ->setHeaders($headers)
-                ->setRows($rowsData);
-            $tableResult->render();
+            if (count($rowsData)) {
+                $tableResult = new Table($output);
+                $tableResult->setHeaderTitle('Successfully imported lines');
+                $tableResult
+                    ->setHeaders($headers)
+                    ->setRows($rowsData);
+                $tableResult->render();
 
-            $io->newLine();
+                $io->newLine();
+            }
 
-            $tableResult = new Table($output);
-            $tableResult->setHeaderTitle('Incorrect lines');
-            $tableResult
-                ->setHeaders(['Line #', 'Data'])
-                ->setRows($incorrectData);
-            $tableResult->render();
+            if (count($incorrectData)) {
+                $tableResult = new Table($output);
+                $tableResult->setHeaderTitle('Incorrect lines');
+                $tableResult
+                    ->setHeaders(['Line #', 'Data'])
+                    ->setRows($incorrectData);
+                $tableResult->render();
 
-            $io->newLine();
+                $io->newLine();
+            }
 
-            array_push($headers, 'Reason');
-            $tableResult = new Table($output);
-            $tableResult->setHeaderTitle('Not imported lines');
-            $tableResult
-                ->setHeaders($headers)
-                ->setRows($notImported);
-            $tableResult->render();
+            if (count($notImported)) {
+                array_push($headers, 'Reason');
+                $tableResult = new Table($output);
+                $tableResult->setHeaderTitle('Not imported lines');
+                $tableResult
+                    ->setHeaders($headers)
+                    ->setRows($notImported);
+                $tableResult->render();
 
-            $io->newLine();
+                $io->newLine();
+            }
         }
 
         $io->success('Parsing process - DONE');
